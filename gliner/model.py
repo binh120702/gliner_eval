@@ -421,7 +421,8 @@ class GLiNER(nn.Module, PyTorchModelHubMixin):
                 multi_label=multi_label,
                 gen_labels=gen_labels,
                 sel_idx = model_output.decoder_span_idx,
-                num_gen_sequences=num_gen_sequences
+                num_gen_sequences=num_gen_sequences,
+                **gen_kwargs
             )
             outputs.extend(decoded_outputs)
 
