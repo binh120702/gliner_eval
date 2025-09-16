@@ -75,10 +75,10 @@ class BaseDecoder(ABC):
                                 iou_threshold=kwargs.get("iou_threshold", 0.5))
         if algo == "mwis" and flat_ner and not multi_label:
             return self.mwis_search(spans)  # MWIS: flat + single-label
-        return self.greedy_search(spans, flat_ner, multi_label=multi_label)  # fallback gốc
+        return self.greedy_search(spans, flat_ner, multi_label=multi_label)  # original fallback
 
     def nms_search(self, spans, flat_ner=True, multi_label=False, iou_threshold=0.5):
-        spans_sorted = sorted(spans, key=lambda x: -x[-1])  # theo score giảm dần
+        spans_sorted = sorted(spans, key=lambda x: -x[-1])  # sort by score desc
         kept = []
         for cand in spans_sorted:
             (i, j, lab, _, s) = cand
@@ -91,7 +91,7 @@ class BaseDecoder(ABC):
                     if self._iou_token((i, j), (sel[0], sel[1])) >= iou_threshold:
                         suppress = True; break
                 else:
-                    # nested mode: chỉ suppress partial-overlap (giữ fully-nested)
+                    # nested mode: just suppress partial-overlap (keep fully-nested)
                     if self._is_partial_overlap((i, j), (sel[0], sel[1])):
                         suppress = True; break
             if not suppress:
