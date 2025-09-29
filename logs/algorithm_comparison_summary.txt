@@ -1,0 +1,9 @@
+ALGORITHM COMPARISON SUMMARY
+========================================
+Algorithm       F1 Score  
+-------------------------
+greedy          0.5624    
+nms             0.5503    
+mwis            0.5601    
+-------------------------
+BEST            0.5624     (greedy)
