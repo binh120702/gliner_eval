@@ -1,0 +1,18 @@
+##############################################
+step: -1 (model en)
+Table for all datasets except crossNER
+BN-Bangla           : 0.4%
+DE-German           : 28.1%
+EN-English          : 35.5%
+ES-Spanish          : 29.9%
+FA-Farsi            : 4.2%
+HI-Hindi            : 4.9%
+KO-Korean           : 13.7%
+NL-Dutch            : 26.6%
+RU-Russian          : 14.8%
+TR-Turkish          : 15.3%
+ZH-Chinese          : 10.5%
+Average             : 16.7%
+
+##############################################
+

@@ -1,143 +1,102 @@
-# 👑 GLiNER: Generalist and Lightweight Model for Named Entity Recognition
 
-GLiNER is a Named Entity Recognition (NER) model capable of identifying any entity type using a bidirectional transformer encoder (BERT-like). It provides a practical alternative to traditional NER models, which are limited to predefined entities, and Large Language Models (LLMs) that, despite their flexibility, are costly and large for resource-constrained scenarios.
+# Chuyên đề nghiên cứu về một số vấn đề chọn lọc trong khoa học máy tính - CS2311.CH190
 
-<p align="center">
-    <a href="https://pypi.org/project/gliner/" target="_blank">
-        <img alt="Python" src="https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54" />
-        <img alt="Version" src="https://img.shields.io/pypi/v/gliner?style=for-the-badge&color=3670A0">
-    </a>
-</p>
+GLiNER is a generalist model for NER (Extract any entity types from texts)
 
-<p align="center">
-    <a href="https://aclanthology.org/2024.naacl-long.300/">📄 Paper</a>
-    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-    <a href="https://discord.gg/Y2yVxpSQnG">📢 Discord</a>
-    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-    <a href="https://huggingface.co/spaces/urchade/gliner_mediumv2.1">🤗 Demo</a>
-    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-    <a href="https://huggingface.co/models?library=gliner&sort=trending">🤗 Available models</a>
-    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-    <a href="https://colab.research.google.com/drive/1mhalKWzmfSTqMnR0wQBZvt9-ktTsATHB?usp=sharing">
-        <img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />
-    </a>
-</p>
+- [Source code](https://github.com/urchade/GLiNER)
+- [Paper](https://aclanthology.org/2024.naacl-long.300/)
 
-## Example Notebooks
+Bài báo cáo này nhằm re-produce lại kết quả bài báo và chạy thử nghiệm trên dataset VLSP 2018.  
 
-Explore various examples including finetuning, ONNX conversion, and synthetic data generation. 
+# Chi tiết thực nghiệm 
+**(File log training và kết quả evaluation được lưu trong folder code - logs_and_results/)**
 
-- [Example Notebooks](https://github.com/urchade/GLiNER/tree/main/examples)
-- Finetune on Colab &nbsp;[<img align="center" src="https://colab.research.google.com/assets/colab-badge.svg" />](https://colab.research.google.com/drive/1HNKd74cmfS9tGvWrKeIjSxBt01QQS7bq?usp=sharing)
-## 🛠 Installation & Usage
+## Danh sách các model nhóm đã tái thực nghiệm:
 
-### Installation
-```bash
-!pip install gliner
-```
+- GLiNER S: model cỡ nhỏ (Deberta-v3-small) [link](https://huggingface.co/binhpdt/reproduced-gliner-small)
+  - train_log: [train_small.log](logs_and_results/train_small.log)
+- GLiNER M: model cỡ trung (Deberta-v3-base) [link](https://huggingface.co/binhpdt/reproduced-gliner-medium)
+  - train_log: [train_medium.log](logs_and_results/train_medium.log)
+- GLiNER L: model cỡ lớn (Deberta-v3-large) [link](https://huggingface.co/binhpdt/reproduced-gliner-large) (Train với batch size 8, steps 30000) tuy nhiên do thiếu hụt tài nguyên GPU nên sẽ có hiện tượng skip steps khi training. Do đó -> GLiNER L-mod
+  - train_log: [train_large.log](logs_and_results/train_large.log)
+- GLiNER L-mod: model cỡ lớn (mod)(Deberta-v3-large) [link](https://huggingface.co/binhpdt/reproduced-gliner-large) (Train với batch size 4, steps 30000) Train nhiều hơn 30000 steps sẽ không cải thiện kết quả quá nhiều.
+  - train_log: [train_large_loss.log](logs_and_results/train_large_loss.log)
+- GLiNER Multi: model đa ngôn ngữ (mDeberta-v3-base) [link](https://huggingface.co/binhpdt/reproduced-gliner-multi)
+  - train_log: [train_multi.log](logs_and_results/train_multi.log)
+- GLiNER Bert: train trên backbone BERT-base-uncased [link](https://huggingface.co/binhpdt/reproduced-bert-medium)
+  - train_log: [train_bert.log](logs_and_results/train_bert.log)
+- GLiNER Albert: train trên backbone Albert-base-v2 [link](https://huggingface.co/binhpdt/reproduced-albert-medium)
+  - train_log: [train_albert.log](logs_and_results/train_albert.log)
+- GLiNER Roberta: train trên backbone RoBERTa-base [link](https://huggingface.co/binhpdt/reproduced-roberta-medium)
+  - train_log: [train_roberta.log](logs_and_results/train_roberta.log)
+- GLiNER Electra: train trên backbone Electra-base-generator [link](https://huggingface.co/binhpdt/reproduced-electra-medium)
+  - train_log: [train_electra.log](logs_and_results/train_electra.log)
+- GLiNER mix20 train: train từ đầu trên tập 20NER [link](https://huggingface.co/binhpdt/reproduced-20ner-mixed-train-gliner)
+  - train_log: [train_mix_train.log](logs_and_results/train_mix_train.log)
+- GLiNER mix20 finetune: train trên tập pileNER sau đó finetune trên tập 20NER [link](https://huggingface.co/binhpdt/reproduced-20ner-mixed-tune-gliner)
+  - train_log: [train_mix_tune.log](logs_and_results/train_mix_tune.log)
+- GLiNER VLSP18: train trên tập VLSP 2018 [link](https://huggingface.co/binhpdt/gliner-vlsp18)
+  - train_log: [train_vlsp.log](logs_and_results/train_vlsp.log)
 
-### Usage
-After the installation of the GLiNER library, import the `GLiNER` class. Following this, you can load your chosen model with `GLiNER.from_pretrained` and utilize `predict_entities` to discern entities within your text.
+## Danh sách bộ dữ liệu thực nghiệm:
+- PileNER: Bộ dữ liệu gốc [link_huggingface](https://huggingface.co/datasets/Universal-NER/Pile-NER-type/resolve/main/train.json)
+- 20NER và OOD NER: tuyển tập các bộ dữ liệu đánh giá cho NER [link_drive](https://drive.google.com/file/d/1T-5IbocGka35I7X3CE6yKe5N_Xg2lVKT/view)
+- MultiCONER: bộ dữ liệu đa ngôn ngữ [link_kaggle](https://www.kaggle.com/datasets/davindersingh23031/multiconer/data) or [offical](https://registry.opendata.aws/multiconer/)
+- VLSP 2018-NER (vui lòng liên hệ VLSP để access)
+## Bảng 1 và 2: 
+- Bao gồm chạy thực nghiệm 3 model S, M, L trên tập 20NER và tập OOD NER:
+- eval_log:
+  - [eval_small.log](logs_and_results/eval_small.log)
+  - [eval_medium.log](logs_and_results/eval_medium.log)
+  - [eval_large_loss.log](logs_and_results/eval_large_loss.log)
+- eval_result:
+  - [logs_large_med_small/results.txt](logs_and_results/logs_large_med_small/results.txt)
+## Bảng 3:
+- Bao gồm thực nghiệm model large và model multi trên bộ dataset MultiCONER:
+- Hàm tiền xử lí dữ liệu được nhóm triển khai trong file [gliner/evaluation/evaluate_multiconer.py](gliner/evaluation/evaluate_multiconer.py)
+- eval_results:
+  - Model large: [logs_multi_large/results.txt](logs_and_results/logs_multi_large/results.txt)
+  - Model multi: [logs_multi_multi/results.txt](logs_and_results/logs_multi_multi/results.txt)
+  
+## Bảng 4:
+- Bao gồm thực nghiệm model VLSP 2018 với model large finetune VLSP, large không finetune VLSP và model multi:
+- Hàm tiền xử lí dữ liệu được nhóm triển khai trong file [gliner/evaluation/evaluate_vlsp.py](gliner/evaluation/evaluate_vlsp.py)
+- eval_results:
+  - All in one: [logs_vlsp_4k/results.txt](logs_and_results/logs_vlsp_4k/results.txt)
+## Figure 5:
+- Bao gồm thực nghiệm so sánh các backbone khác nhau:
+- eval_results:
+  - Bert: [logs_bert/results.txt](logs_and_results/logs_bert/results.txt)
+  - Albert: [logs_albert/results.txt](logs_and_results/logs_albert/results.txt)
+  - Roberta: [logs_roberta/results.txt](logs_and_results/logs_roberta/results.txt)
+  - Electra: [logs_electra/results.txt](logs_and_results/logs_electra/results.txt)
+  - Deberta-v3 (chính là GLiNER medium) [log_gliner_medium/results.txt](logs_and_results/logs_gliner_medium/results.txt)
+## Bảng 5:
+- Bao gồm việc sample 10k trong mỗi bộ dataset thuộc bộ 20NER, tạo thành 1 bộ mix_data và cho finetune trên GLiNER để đánh giá.
+- eval_results:
+  - Model train từ đầu: [logs_mix_train/results.txt](logs_and_results/logs_mix_train/results.txt)
+  - Model train trước trên PileNER sau đó finetune trên mix_data: [logs_mix_tune/results.txt](logs_and_results/logs_mix_tune/results.txt)
 
-```python
-from gliner import GLiNER
+# Novelty
 
-# Initialize GLiNER with the base model
-model = GLiNER.from_pretrained("urchade/gliner_medium-v2.1")
-
-# Sample text for entity prediction
-text = """
-Cristiano Ronaldo dos Santos Aveiro (Portuguese pronunciation: [kɾiʃˈtjɐnu ʁɔˈnaldu]; born 5 February 1985) is a Portuguese professional footballer who plays as a forward for and captains both Saudi Pro League club Al Nassr and the Portugal national team. Widely regarded as one of the greatest players of all time, Ronaldo has won five Ballon d'Or awards,[note 3] a record three UEFA Men's Player of the Year Awards, and four European Golden Shoes, the most by a European player. He has won 33 trophies in his career, including seven league titles, five UEFA Champions Leagues, the UEFA European Championship and the UEFA Nations League. Ronaldo holds the records for most appearances (183), goals (140) and assists (42) in the Champions League, goals in the European Championship (14), international goals (128) and international appearances (205). He is one of the few players to have made over 1,200 professional career appearances, the most by an outfield player, and has scored over 850 official senior career goals for club and country, making him the top goalscorer of all time.
-"""
-
-# Labels for entity prediction
-# Most GLiNER models should work best when entity types are in lower case or title case
-labels = ["Person", "Award", "Date", "Competitions", "Teams"]
-
-# Perform entity prediction
-entities = model.predict_entities(text, labels, threshold=0.5)
-
-# Display predicted entities and their labels
-for entity in entities:
-    print(entity["text"], "=>", entity["label"])
-```
-
-#### Expected Output
-
-```
-Cristiano Ronaldo dos Santos Aveiro => person
-5 February 1985 => date
-Al Nassr => teams
-Portugal national team => teams
-Ballon d'Or => award
-UEFA Men's Player of the Year Awards => award
-European Golden Shoes => award
-UEFA Champions Leagues => competitions
-UEFA European Championship => competitions
-UEFA Nations League => competitions
-European Championship => competitions
-```
-## 🌟 Maintainers
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center">
-        <strong>Urchade Zaratiana</strong><br>
-        <em>Member of technical staff at Fastino</em><br>
-        <a href="https://www.linkedin.com/in/urchade-zaratiana/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
-      </td>
-      <td align="center">
-        <strong>Ihor Stepanov</strong><br>
-        <em>Co-Founder at Knowledgator</em><br>
-        <a href="https://www.linkedin.com/in/ihor-stepanov/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" /></a>
-      </td>
-    </tr>
-  </table>
-</div>
-
-## 👨‍💻 Model Authors
-The model authors are:
-* [Urchade Zaratiana](https://huggingface.co/urchade)
-* Nadi Tomeh
-* Pierre Holat
-* Thierry Charnois
-
-## 📚 Citation
-
-If you find GLiNER useful in your research, please consider citing our paper:
-
-```bibtex
-@inproceedings{zaratiana-etal-2024-gliner,
-    title = "{GL}i{NER}: Generalist Model for Named Entity Recognition using Bidirectional Transformer",
-    author = "Zaratiana, Urchade  and
-      Tomeh, Nadi  and
-      Holat, Pierre  and
-      Charnois, Thierry",
-    editor = "Duh, Kevin  and
-      Gomez, Helena  and
-      Bethard, Steven",
-    booktitle = "Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers)",
-    month = jun,
-    year = "2024",
-    address = "Mexico City, Mexico",
-    publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/2024.naacl-long.300",
-    doi = "10.18653/v1/2024.naacl-long.300",
-    pages = "5364--5376",
-    abstract = "Named Entity Recognition (NER) is essential in various Natural Language Processing (NLP) applications. Traditional NER models are effective but limited to a set of predefined entity types. In contrast, Large Language Models (LLMs) can extract arbitrary entities through natural language instructions, offering greater flexibility. However, their size and cost, particularly for those accessed via APIs like ChatGPT, make them impractical in resource-limited scenarios. In this paper, we introduce a compact NER model trained to identify any type of entity. Leveraging a bidirectional transformer encoder, our model, GLiNER, facilitates parallel entity extraction, an advantage over the slow sequential token generation of LLMs. Through comprehensive testing, GLiNER demonstrate strong performance, outperforming both ChatGPT and fine-tuned LLMs in zero-shot evaluations on various NER benchmarks.",
-}
-```
-## Support and funding
-
-This project has been supported and funded by **F.initiatives** and **Laboratoire Informatique de Paris Nord**.
-
-F.initiatives has been an expert in public funding strategies for R&D, Innovation, and Investments (R&D&I) for over 20 years. With a team of more than 200 qualified consultants, F.initiatives guides its clients at every stage of developing their public funding strategy: from structuring their projects to submitting their aid application, while ensuring the translation of their industrial and technological challenges to public funders. Through its continuous commitment to excellence and integrity, F.initiatives relies on the synergy between methods and tools to offer tailored, high-quality, and secure support.
-
-<p align="center">
-  <img src="logo/FI_COMPLET_CW.png" alt="FI Group" width="300"/>
-</p>
-
-We also extend our heartfelt gratitude to the open-source community for their invaluable contributions, which have been instrumental in the success of this project.
-
-
+- Triển khai hàm loss adversarial contrastive loss, span embedding và entity embedding sai sẽ được đẩy xa khỏi nhau, đặc biệt là cho các cặp entity "gần nhau / lẫn lộn"
+  - Kết hợp với focal loss:
+    - Giữ nguyên focal loss
+    - Thêm thành phần contrastive với trọng số cấu hình được
+    - Cân bằng học phân loại và học embedding
+  - Train 3 mô hình small, medium, large với hàm loss này và so sánh kết quả với mô hình original.
+  - gliner_new_loss_small: 
+    - train_log: [logs/results_small_loss.txt](logs/train_small_loss.txt)
+    - link model huggingface: [gliner_new_loss_small](https://huggingface.co/binhpdt/gliner_constractive_loss_small)
+    - eval_results: [logs/results_small_loss.txt](logs/results_small_loss.txt)
+  - gliner_new_loss_medium: 
+    - train_log: [logs/results_medium_loss.txt](logs/train_medium_loss.txt)
+    - link model huggingface: [gliner_new_loss_medium](https://huggingface.co/binhpdt/gliner_constractive_loss_medium)
+    - eval_results: [logs/results_medium_loss.txt](logs/results_medium_loss.txt)
+  - gliner_new_loss_large: 
+    - train_log: [logs/results_large_loss.txt](logs/train_large_loss.txt)
+    - link model huggingface: [gliner_new_loss_large](https://huggingface.co/binhpdt/gliner_constractive_loss_large)
+    - eval_results: [logs/results_large_loss.txt](logs/results_large_loss.txt)
+- Giới thiệu phương pháp decode span: greedy(default), nms, mwis. Chạy thử trên mô hình `gliner_new_loss_large`
+  - eval_results_mwis: [logs/test_eval_mwis/results.txt](logs/test_eval_mwis/tables.txt)
+  - eval_results_nms: [logs/test_eval_nms/results.txt](logs/test_eval_nms/tables.txt)

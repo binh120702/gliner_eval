@@ -1,0 +1,35 @@
+##############################################
+step: -1
+Table for all datasets except crossNER
+ACE 2004            : 27.0%
+ACE 2005            : 26.2%
+AnatEM              : 36.6%
+Broad Tweet Corpus  : 53.5%
+CoNLL 2003          : 60.8%
+FabNER              : 22.9%
+FindVehicle         : 30.1%
+GENIA_NER           : 49.1%
+HarveyNER           : 20.7%
+MultiNERD           : 58.3%
+Ontonotes           : 24.1%
+PolyglotNER         : 42.9%
+TweetNER7           : 34.3%
+WikiANN en          : 56.3%
+WikiNeural          : 72.5%
+bc2gm               : 53.0%
+bc4chemd            : 34.7%
+bc5cdr              : 60.9%
+ncbi                : 53.7%
+Average             : 43.0%
+
+Table for zero-shot benchmark
+CrossNER_AI         : 49.7%
+CrossNER_literature : 54.3%
+CrossNER_music      : 65.5%
+CrossNER_politics   : 71.0%
+CrossNER_science    : 52.9%
+mit-movie           : 41.6%
+mit-restaurant      : 34.3%
+Average             : 52.8%
+##############################################
+

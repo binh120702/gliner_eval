@@ -91,7 +91,7 @@ def get_for_one_path(path, model):
 
     # evaluate the model
     results, f1 = model.evaluate(test_dataset, flat_ner=flat_ner, threshold=0.5, batch_size=12,
-                                 entity_types=entity_types)
+                                 entity_types=entity_types, decoding_algo="mwis")
     return data_name, results, f1
 
 
@@ -160,6 +160,124 @@ def get_for_all_path(model, steps, log_dir, data_paths):
         f.write("Table for zero-shot benchmark\n")
         f.write(table_bench_zeroshot + "\n")
         f.write("##############################################\n\n")
+
+
+def compare_decoding_algorithms(model, steps, log_dir, data_paths, iou_threshold=0.5):
+    """
+    Run evaluation across all datasets for three decoding algorithms (greedy, nms, mwis),
+    and write a side-by-side comparison table to file. Also writes per-algorithm results.
+    """
+    all_paths = glob.glob(f"{data_paths}/*")
+    all_paths = sorted(all_paths)
+
+    # move the model to the device
+    device = next(model.parameters()).device
+    model.to(device)
+    model.eval()
+
+    # prepare log files
+    os.makedirs(log_dir, exist_ok=True)
+    combined_save_path = os.path.join(log_dir, "tables_compare.txt")
+
+    algo_list = [
+        # ("greedy", {"decoding_algo": "greedy"}),
+        ("nms", {"decoding_algo": "nms"}),
+        ("mwis", {"decoding_algo": "mwis"}),
+    ]
+
+    # results structure: {algo: {dataset_name: f1}}
+    algo_to_results = {name: {} for name, _ in algo_list}
+
+    # zero-shot grouping (reused from get_for_all_path)
+    zero_shot_benc = [
+        "mit-movie", "mit-restaurant", "CrossNER_AI", "CrossNER_literature",
+        "CrossNER_music", "CrossNER_politics", "CrossNER_science"
+    ]
+
+    # per-algorithm raw results files
+    per_algo_files = {
+        name: os.path.join(log_dir, f"results_{name}.txt") for name, _ in algo_list
+    }
+    for pth in per_algo_files.values():
+        with open(pth, "a") as f:
+            f.write("##############################################\n")
+            f.write("step: " + str(steps) + "\n")
+
+    for p in tqdm(all_paths):
+        if "sample_" in p:
+            continue
+        # build once per dataset
+        _, _, test_dataset, entity_types = create_dataset(p)
+        data_name = p.split("/")[-1]
+
+        # detect flat/non-flat
+        flat_ner = True
+        if any([i in data_name for i in ["ACE", "GENIA", "Corpus"]]):
+            flat_ner = False
+
+        for algo_name, algo_kwargs in algo_list:
+            results, f1 = model.evaluate(
+                test_dataset,
+                flat_ner=flat_ner,
+                threshold=0.5,
+                batch_size=12,
+                entity_types=entity_types,
+                **algo_kwargs,
+            )
+            algo_to_results[algo_name][data_name] = f1
+            # write per-algo raw
+            with open(per_algo_files[algo_name], "a") as f:
+                f.write(data_name + "\n")
+                f.write(str(results) + "\n")
+
+    # compute averages
+    def compute_avgs(results_dict):
+        # exclude CrossNER for main average
+        plain = {k: v for k, v in results_dict.items() if k not in zero_shot_benc}
+        zs = {k: v for k, v in results_dict.items() if k in zero_shot_benc}
+        avg_plain = (sum(plain.values()) / len(plain)) if plain else 0.0
+        avg_zs = (sum(zs.values()) / len(zs)) if zs else 0.0
+        return avg_plain, avg_zs
+
+    greedy_avg_all, greedy_avg_zs = compute_avgs(algo_to_results["greedy"])
+    nms_avg_all, nms_avg_zs = compute_avgs(algo_to_results["nms"])
+    mwis_avg_all, mwis_avg_zs = compute_avgs(algo_to_results["mwis"])
+
+    # build a union of all dataset names to print rows consistently
+    all_dataset_names = set()
+    for res in algo_to_results.values():
+        all_dataset_names.update(res.keys())
+    all_dataset_names = sorted(all_dataset_names)
+
+    # compose comparison table text
+    lines = []
+    lines.append("##############################################")
+    lines.append("step: " + str(steps))
+    lines.append("Decoding algorithms comparison (F1)")
+    lines.append("")
+    header = f"{'Dataset':20} | {'Greedy':>8} | {'NMS':>8} | {'MWIS':>8}"
+    lines.append(header)
+    lines.append("-" * len(header))
+    for name in all_dataset_names:
+        g = algo_to_results["greedy"].get(name, float('nan'))
+        n = algo_to_results["nms"].get(name, float('nan'))
+        m = algo_to_results["mwis"].get(name, float('nan'))
+        def fmt(x):
+            try:
+                return f"{x:.1%}"
+            except Exception:
+                return "NA"
+        lines.append(f"{name:20} | {fmt(g):>8} | {fmt(n):>8} | {fmt(m):>8}")
+
+    lines.append("")
+    lines.append("Averages (excluding CrossNER):")
+    lines.append(f"{'Average':20} | {greedy_avg_all:.1%:>8} | {nms_avg_all:.1%:>8} | {mwis_avg_all:.1%:>8}")
+    lines.append("Zero-shot benchmark averages:")
+    lines.append(f"{'Average-ZS':20} | {greedy_avg_zs:.1%:>8} | {nms_avg_zs:.1%:>8} | {mwis_avg_zs:.1%:>8}")
+    lines.append("##############################################\n")
+
+    with open(combined_save_path, "a") as f:
+        f.write("\n".join(lines) + "\n")
 
 
 def sample_train_data(data_paths, sample_size=10000):

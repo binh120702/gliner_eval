@@ -14,7 +14,7 @@ from .encoder import Encoder, BiEncoder
 from .decoder import Decoder
 from .layers import LstmSeq2SeqEncoder, CrossFuser, SelfAttentionBlock, create_projection_layer
 from .scorers import Scorer
-from .loss_functions import focal_loss_with_logits, cross_entropy_loss
+from .loss_functions import focal_loss_with_logits, cross_entropy_loss, combined_adversarial_loss
 from .span_rep import SpanRepLayer
 
 @dataclass
@@ -569,7 +569,9 @@ class SpanModel(BaseModel):
 
         loss = None
         if labels is not None:
-            loss = self.loss(scores, labels, prompts_embedding_mask, span_mask, decoder_loss=decoder_loss, **kwargs)
+            loss = self.loss(scores, labels, prompts_embedding_mask, span_mask, 
+                           decoder_loss=decoder_loss, span_embeddings=span_rep, 
+                           entity_embeddings=prompts_embedding, **kwargs)
 
         output = GLiNERModelOutput(
             logits=scores,
@@ -587,7 +589,10 @@ class SpanModel(BaseModel):
 
     def loss(self, scores, labels, prompts_embedding_mask, mask_label,
              alpha: float = -1., gamma: float = 0.0, label_smoothing: float = 0.0,
-             reduction: str = 'sum', negatives=1.0, masking="label", decoder_loss = None, **kwargs):
+             reduction: str = 'sum', negatives=1.0, masking="label", decoder_loss = None,
+             use_adversarial_loss: bool = False, contrastive_weight: float = 0.1,
+             temperature: float = 0.1, margin: float = 0.5, confusion_threshold: float = 0.3,
+             span_embeddings=None, entity_embeddings=None, **kwargs):
 
         batch_size = scores.shape[0]
         num_classes = prompts_embedding_mask.shape[-1]
@@ -598,24 +603,46 @@ class SpanModel(BaseModel):
         scores = scores.view(BS, -1, CL)
         labels = labels.view(BS, -1, CL)
 
-        all_losses = self._loss(scores, labels, alpha, gamma, label_smoothing, negatives, masking=masking)
-
-        masked_loss = all_losses.view(batch_size, -1, num_classes) * prompts_embedding_mask.unsqueeze(1)
-        all_losses = masked_loss.view(-1, num_classes)
-
-        mask_label = mask_label.view(-1, 1)
-
-        all_losses = all_losses * mask_label.float()
-
-        if reduction == "mean":
-            loss = all_losses.mean()
-        elif reduction == 'sum':
-            loss = all_losses.sum()
+        if use_adversarial_loss and span_embeddings is not None and entity_embeddings is not None:
+            # Use combined adversarial loss
+            loss = combined_adversarial_loss(
+                scores, labels, span_embeddings, entity_embeddings,
+                focal_alpha=alpha, focal_gamma=gamma, contrastive_weight=contrastive_weight,
+                temperature=temperature, margin=margin, confusion_threshold=confusion_threshold,
+                reduction=reduction, label_smoothing=label_smoothing, **kwargs
+            )
+            
+            # Apply masking
+            if reduction == "none":
+                masked_loss = loss.view(batch_size, -1, num_classes) * prompts_embedding_mask.unsqueeze(1)
+                loss = masked_loss.view(-1, num_classes)
+                mask_label = mask_label.view(-1, 1)
+                loss = loss * mask_label.float()
+                
+                if reduction == "mean":
+                    loss = loss.mean()
+                elif reduction == 'sum':
+                    loss = loss.sum()
         else:
-            warnings.warn(
-                f"Invalid Value for config 'loss_reduction': '{reduction} \n Supported reduction modes:"
-                f" 'none', 'mean', 'sum'. It will be used 'sum' instead.")
-            loss = all_losses.sum()
+            # Use original focal loss
+            all_losses = self._loss(scores, labels, alpha, gamma, label_smoothing, negatives, masking=masking)
+
+            masked_loss = all_losses.view(batch_size, -1, num_classes) * prompts_embedding_mask.unsqueeze(1)
+            all_losses = masked_loss.view(-1, num_classes)
+
+            mask_label = mask_label.view(-1, 1)
+
+            all_losses = all_losses * mask_label.float()
+
+            if reduction == "mean":
+                loss = all_losses.mean()
+            elif reduction == 'sum':
+                loss = all_losses.sum()
+            else:
+                warnings.warn(
+                    f"Invalid Value for config 'loss_reduction': '{reduction} \n Supported reduction modes:"
+                    f" 'none', 'mean', 'sum'. It will be used 'sum' instead.")
+                loss = all_losses.sum()
 
         if decoder_loss is not None:
             loss = decoder_loss*0.75+loss*0.25

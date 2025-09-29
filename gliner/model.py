@@ -539,6 +539,7 @@ class GLiNER(nn.Module, PyTorchModelHubMixin):
         threshold=0.5,
         batch_size=12,
         entity_types=None,
+        decoding_algo="greedy",
     ):
         """
         Evaluate the model on a given test dataset.
@@ -550,7 +551,7 @@ class GLiNER(nn.Module, PyTorchModelHubMixin):
             threshold (float): The threshold for predictions. Defaults to 0.5.
             batch_size (int): The batch size for evaluation. Defaults to 12.
             entity_types (Optional[List[str]]): List of entity types to consider. Defaults to None.
-
+            decoding_algo (str): The decoding algorithm to use. Defaults to "greedy".
         Returns:
             tuple: A tuple containing the evaluation output and the F1 score.
         """
@@ -593,6 +594,7 @@ class GLiNER(nn.Module, PyTorchModelHubMixin):
                 flat_ner=flat_ner,
                 threshold=threshold,
                 multi_label=multi_label,
+                decoding_algo=decoding_algo,
             )
             all_preds.extend(decoded_outputs)
             all_trues.extend(batch["entities"])

@@ -114,6 +114,12 @@ if __name__ == '__main__':
         use_cpu = False,
         report_to="none",
         bf16=True,
+        # Adversarial contrastive loss parameters
+        use_adversarial_loss=getattr(config, 'use_adversarial_loss', False),
+        contrastive_weight=getattr(config, 'contrastive_weight', 0.1),
+        temperature=getattr(config, 'temperature', 0.1),
+        margin=getattr(config, 'margin', 0.5),
+        confusion_threshold=getattr(config, 'confusion_threshold', 0.3),
         )
 
     trainer = Trainer(

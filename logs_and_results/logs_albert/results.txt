@@ -1,0 +1,80 @@
+##############################################
+step: -1
+ACE 2004
+P: 32.37%	R: 22.15%	F1: 26.30%
+
+ACE 2005
+P: 27.93%	R: 17.64%	F1: 21.62%
+
+AnatEM
+P: 33.54%	R: 49.59%	F1: 40.01%
+
+Broad Tweet Corpus
+P: 49.11%	R: 70.29%	F1: 57.82%
+
+CoNLL 2003
+P: 52.66%	R: 65.95%	F1: 58.56%
+
+CrossNER_AI
+P: 44.70%	R: 50.78%	F1: 47.55%
+
+CrossNER_literature
+P: 57.10%	R: 55.10%	F1: 56.08%
+
+CrossNER_music
+P: 63.87%	R: 64.85%	F1: 64.35%
+
+CrossNER_politics
+P: 65.80%	R: 69.55%	F1: 67.62%
+
+CrossNER_science
+P: 53.78%	R: 53.95%	F1: 53.86%
+
+FabNER
+P: 25.49%	R: 20.88%	F1: 22.95%
+
+FindVehicle
+P: 33.14%	R: 9.33%	F1: 14.56%
+
+GENIA_NER
+P: 42.42%	R: 52.20%	F1: 46.80%
+
+HarveyNER
+P: 11.76%	R: 31.35%	F1: 17.10%
+
+MultiNERD
+P: 42.15%	R: 84.22%	F1: 56.18%
+
+Ontonotes
+P: 19.87%	R: 33.87%	F1: 25.05%
+
+PolyglotNER
+P: 26.91%	R: 65.34%	F1: 38.12%
+
+TweetNER7
+P: 34.30%	R: 36.61%	F1: 35.42%
+
+WikiANN en
+P: 49.83%	R: 57.04%	F1: 53.19%
+
+WikiNeural
+P: 52.25%	R: 85.02%	F1: 64.72%
+
+bc2gm
+P: 41.59%	R: 59.15%	F1: 48.84%
+
+bc4chemd
+P: 23.07%	R: 63.00%	F1: 33.77%
+
+bc5cdr
+P: 53.39%	R: 70.47%	F1: 60.75%
+
+mit-movie
+P: 46.89%	R: 12.44%	F1: 19.66%
+
+mit-restaurant
+P: 42.09%	R: 27.71%	F1: 33.42%
+
+ncbi
+P: 29.29%	R: 62.38%	F1: 39.87%
+

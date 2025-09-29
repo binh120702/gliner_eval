@@ -42,6 +42,12 @@ class TrainingArguments(transformers.TrainingArguments):
     loss_reduction: Optional[str] = 'sum'
     negatives: Optional[float] = 1.0
     masking: Optional[str] = 'global'
+    # Adversarial contrastive loss parameters
+    use_adversarial_loss: Optional[bool] = False
+    contrastive_weight: Optional[float] = 0.1
+    temperature: Optional[float] = 0.1
+    margin: Optional[float] = 0.5
+    confusion_threshold: Optional[float] = 0.3
 
 class Trainer(transformers.Trainer):
     def training_step(self, model, inputs, *args, **kwargs) -> torch.Tensor:
@@ -112,6 +118,11 @@ class Trainer(transformers.Trainer):
                         reduction = self.args.loss_reduction,
                         negatives = self.args.negatives,
                         masking = self.args.masking,
+                        use_adversarial_loss = self.args.use_adversarial_loss,
+                        contrastive_weight = self.args.contrastive_weight,
+                        temperature = self.args.temperature,
+                        margin = self.args.margin,
+                        confusion_threshold = self.args.confusion_threshold,
                         **inputs)
         loss = outputs.loss
         return loss

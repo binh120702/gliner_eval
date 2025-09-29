@@ -4,7 +4,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+*.json
+*.pt
+*.bin
+*.pth
+*.model
+*.zip
 # C extensions
 *.so
 
